@@ -1,46 +1,39 @@
 import streamlit as st
 from PIL import Image
 
-ASCII_CHARS = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]
+ASCII_CHARS = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]  
 
-# resize image according to a new width
-def resize_image(image, new_width=100):
+def ascii_art(image, new_width=100):  
+    
     width, height = image.size
     ratio = height/width
     new_height = int(new_width * ratio)
-    resized_image = image.resize((new_width, new_height))
-    return(resized_image)
+    image = image.resize((new_width, new_height)) # Resized image
 
-# convert each pixel to grayscale
-def grayify(image):
-    grayscale_image = image.convert("L")
-    return(grayscale_image)
-    
-# convert pixels to a string of ascii characters
-def pixels_to_ascii(image):
+    image = image.convert("L") # Grayscale image
+
     pixels = image.getdata()
-    characters = "".join([ASCII_CHARS[pixel//25] for pixel in pixels])
-    return(characters)    
-
-def ascii_art(image, new_width=100):  
-    # convert image to ascii    
-    new_image_data = pixels_to_ascii(grayify(resize_image(image)))
+    ascii_img = ""
+    i = 0
+    for pixel in pixels:
+        ascii_img += ASCII_CHARS[pixel//25]
+        if ( i == new_width):
+            ascii_img += '\n'
+            i = 0
+        i += 1
     
-    # format
-    pixel_count = len(new_image_data)  
-    ascii_image = "\n".join([new_image_data[index:(index+new_width)] for index in range(0, pixel_count, new_width)])
-    
-    # return result
-    return ascii_image
- 
+    return ascii_img
 
-img_buffer = st.file_uploader(
-    label = "Pick a file",
-    type = ['png', 'jpg', 'jpeg']
-    )
+if __name__ == '__main__':
+    img_buffer = st.file_uploader(
+        label = "Pick a file",
+        type = ['png', 'jpg', 'jpeg'],
+        accept_multiple_files = False
+        )
 
-if img_buffer is not None:
-    fname = img_buffer.name
-    print(fname)
-    image = Image.open(img_buffer)
-    st.download_button("Download ASCII art", ascii_art(image=image), file_name="download")
+    if img_buffer is not None:
+        fname = img_buffer.name
+        print(fname)
+        image = Image.open(img_buffer)
+        ascii_art(image)
+        st.download_button("Download ASCII art", ascii_art(image=image), file_name = f"{fname[0:fname.index('.')]}.txt")
