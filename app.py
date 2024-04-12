@@ -1,10 +1,13 @@
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 ASCII_CHARS = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]  
 
-def ascii_art(image, new_width=100):  
-    
+global ratio
+
+def ascii_art(image, new_width=200):  
+    global ratio
+
     width, height = image.size
     ratio = height/width
     new_height = int(new_width * ratio)
@@ -22,9 +25,35 @@ def ascii_art(image, new_width=100):
             i = 0
         i += 1
     
+    # f = open("image.txt", "w")
+    # f.write(ascii_img)
+    # f.close()
+
     return ascii_img
 
+def ascii_to_img(ascii_art):
+    global ratio
+    fontname = "Consolas.ttf"
+    fontsize = 5
+    text = "example@gmail.com"
+    
+    colorText = "white"
+    colorOutline = "red"
+    colorBackground = "black"
+
+    font = ImageFont.truetype(fontname, fontsize)
+    img = Image.new('RGB', (1000, int(1000 * ratio)), colorBackground)
+    d = ImageDraw.Draw(img)
+    d.text((0, 0), ascii_art, fill=colorText, font=font)
+    # d.rectangle((0, 0, width+3, height+3), outline=colorOutline)
+    
+    img.save("image.png")
+
+
 if __name__ == '__main__':
+
+    st.header("Image to ASCII Art", divider="rainbow")
+
     img_buffer = st.file_uploader(
         label = "Pick a file",
         type = ['png', 'jpg', 'jpeg'],
@@ -33,7 +62,8 @@ if __name__ == '__main__':
 
     if img_buffer is not None:
         fname = img_buffer.name
-        print(fname)
         image = Image.open(img_buffer)
-        ascii_art(image)
-        st.download_button("Download ASCII art", ascii_art(image=image), file_name = f"{fname[0:fname.index('.')]}.txt")
+        ascii_to_img(ascii_art(image))
+        # st.download_button("Download ASCII art", ascii_art(image=image), file_name = f"{fname[0:fname.index('.')]}.txt")
+
+        # st.text(ascii_art(image))
